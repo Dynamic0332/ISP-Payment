@@ -1,12 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ISP Payment Tracker - Firebase</title>
+  <title>ISP Dashboard Login</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div id="login-section">
@@ -20,12 +19,12 @@
   <main id="dashboard" style="display:none;">
     <header>
       <h1>Dynamic Internet Service - Payment Tracker</h1>
-      <button id="logoutBtn" onclick="logout()">Logout</button>
     </header>
     <section class="summary">
       <p><strong>Total Users:</strong> <span id="totalUsers">0</span></p>
       <p><strong>Paid:</strong> <span id="paidUsers">0</span></p>
       <p><strong>Unpaid:</strong> <span id="unpaidUsers">0</span></p>
+      <button onclick="exportCSV()">Export CSV</button>
     </section>
 
     <section class="add-user">
@@ -35,10 +34,8 @@
       <input type="text" id="address" placeholder="Address" />
       <select id="package">
         <option value="15Mbps">15 Mbps</option>
-        <option value="16Mbps Static IP">16 Mbps Static IP</option>
         <option value="20Mbps">20 Mbps</option>
         <option value="30Mbps">30 Mbps</option>
-        <option value="32Mbps Static IP">32 Mbps Static IP</option>
         <option value="40Mbps">40 Mbps</option>
         <option value="50Mbps">50 Mbps</option>
         <option value="60Mbps">60 Mbps</option>
