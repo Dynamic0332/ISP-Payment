@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISP Payment Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    main {
+      padding: 1rem;
+    }
+    section {
+      background-color: white;
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+    }
+    input, select, button {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 400px;
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #003366;
+      color: white;
+    }
+    .paid {
+      color: green;
+      font-weight: bold;
+    }
+    .unpaid {
+      color: red;
+      font-weight: bold;
+    }
+    .summary p {
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dynamic Internet Service - Payment Tracker</h1>
+  </header>
+  
+  <main>
+    <section class="summary">
+      <p><strong>Total Users:</strong> <span id="totalUsers">0</span></p>
+      <p><strong>Paid:</strong> <span id="paidUsers">0</span></p>
+      <p><strong>Unpaid:</strong> <span id="unpaidUsers">0</span></p>
+      <button onclick="exportCSV()">Export CSV</button>
+    </section>
+
+    <section class="add-user">
+      <h2>Add User</h2>
+      <input type="text" id="name" placeholder="Name" />
+      <input type="text" id="phone" placeholder="Phone Number" />
+      <select id="package">
+        <option value="15Mbps">15 Mbps</option>
+        <option value="20Mbps">20 Mbps</option>
+        <option value="30Mbps">30 Mbps</option>
+        <option value="40Mbps">40 Mbps</option>
+        <option value="50Mbps">50 Mbps</option>
+        <option value="60Mbps">60 Mbps</option>
+        <option value="75Mbps">75 Mbps</option>
+      </select>
+      <input type="number" id="amount" placeholder="Monthly Amount" />
+      <button onclick="addUser()">Add User</button>
+    </section>
+
+    <section class="user-list">
+      <h2>User List</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Package</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+
+    function saveUsers() {
+      localStorage.setItem('users', JSON.stringify(users));
+      renderTable();
+    }
+
+    function addUser() {
+      const name = document.getElementById('name').value;
+      const phone = document.getElementById('phone').value;
+      const pkg = document.getElementById('package').value;
+      const amount = document.getElementById('amount').value;
+      if (!name || !phone || !pkg || !amount) return alert('Fill all fields');
+      users.push({ name, phone, pkg, amount, paid: false });
+      saveUsers();
+      document.getElementById('name').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('amount').value = '';
+    }
+
+    function toggleStatus(index) {
+      users[index].paid = !users[index].paid;
+      saveUsers();
+    }
+
+    function sendWhatsApp(index) {
+      const user = users[index];
+      const message = `Dear ${user.name}, your monthly internet bill of Rs.${user.amount} for ${user.pkg} is due. Kindly pay to avoid disconnection.`;
+      const url = `https://wa.me/${user.phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    }
+
+    function exportCSV() {
+      const csv = ['Name,Phone,Package,Amount,Paid'];
+      users.forEach(u => {
+        csv.push(`${u.name},${u.phone},${u.pkg},${u.amount},${u.paid ? 'Paid' : 'Unpaid'}`);
+      });
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'users.csv';
+      a.click();
+    }
+
+    function renderTable() {
+      const table = document.getElementById('userTable');
+      table.innerHTML = '';
+      let paid = 0;
+      users.forEach((user, i) => {
+        if (user.paid) paid++;
+        const row = `<tr>
+          <td>${user.name}</td>
+          <td>${user.phone}</td>
+          <td>${user.pkg}</td>
+          <td>${user.amount}</td>
+          <td class="${user.paid ? 'paid' : 'unpaid'}">${user.paid ? 'Paid' : 'Unpaid'}</td>
+          <td>
+            <button onclick="toggleStatus(${i})">Toggle</button>
+            <button onclick="sendWhatsApp(${i})">WhatsApp</button>
+          </td>
+        </tr>`;
+        table.innerHTML += row;
+      });
+      document.getElementById('totalUsers').innerText = users.length;
+      document.getElementById('paidUsers').innerText = paid;
+      document.getElementById('unpaidUsers').innerText = users.length - paid;
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
