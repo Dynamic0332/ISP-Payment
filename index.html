@@ -7,7 +7,7 @@
   <style>
     body {margin:0;font-family:Arial,sans-serif;background:#f0f2f5;color:#333;}
     header {background:#003366;color:#fff;padding:1rem;text-align:center;position:relative;}
-    #logoutBtn {position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:#e60000;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;}
+    #logoutBtn {position:fixed;top:1rem;right:1rem;background:#e60000;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;z-index:1000;}
     main {max-width:1000px;margin:auto;padding:1rem;}
     .cards {display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
     .card {flex:1;background:#fff;padding:1rem;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.05);text-align:center;}
@@ -28,11 +28,13 @@
 </head>
 <body>
   <div id="login-section">
-    <h2>Login to ISP Dashboard</h2>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
-    <p id="login-error" style="color:red;"></p>
+    <form onsubmit="login(); return false;">
+      <h2>Login to Dynamic Payment Dashboard</h2>
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+      <p id="login-error" style="color:red;"></p>
+    </form>
   </div>
 
   <main id="dashboard" style="display:none;">
@@ -139,6 +141,21 @@
       }
     }
 
+    function editUser(id) {
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+      const name = prompt('Edit Name:', user.name);
+      const phone = prompt('Edit Phone:', user.phone);
+      const address = prompt('Edit Address:', user.address);
+      const pkg = prompt('Edit Package:', user.pkg);
+      const amount = prompt('Edit Amount:', user.amount);
+      if (name && phone && address && pkg && amount) {
+        Object.assign(user, { name, phone, address, pkg, amount });
+        localStorage.setItem('users', JSON.stringify(users));
+        loadUsers();
+      }
+    }
+
     function toggleStatus(id) {
       const user = users.find(u => u.id === id);
       if (user) {
@@ -169,6 +186,7 @@
           <td class="${user.paid ? 'paid' : 'unpaid'}">${user.paid ? 'Paid' : 'Unpaid'}</td>
           <td>
             <button onclick="toggleStatus(${user.id})">Toggle</button>
+            <button onclick="editUser(${user.id})">Edit</button>
             <button onclick="deleteUser(${user.id})">Delete</button>
             <button onclick="sendReminder('${user.phone}', '${user.pkg}', '${user.amount}')">Reminder</button>
           </td>
